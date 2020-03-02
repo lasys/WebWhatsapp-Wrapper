@@ -350,7 +350,7 @@ class WhatsAPIDriver(object):
         """
         return self.wapi_functions.getAllChatIds()
 
-    def get_unread(self, include_me=False, include_notifications=False, use_unread_count=False):
+    def get_unread(self, include_me=False, include_notifications=False, use_unread_count=True):
         """
         Fetches unread messages
         :param include_me: Include user's messages
@@ -368,7 +368,8 @@ class WhatsAPIDriver(object):
         for raw_message_group in raw_message_groups:
             chat = factory_chat(raw_message_group, self)
             messages = list(
-                filter(None.__ne__, [factory_message(message, self) for message in raw_message_group['messages']]))
+               # filter(None.__ne__, [factory_message(message, self) for message in raw_message_group['messages']]))
+                [factory_message(message, self) for message in raw_message_group['messages']])
             messages.sort(key=lambda message: message.timestamp)
             unread_messages.append(MessageGroup(chat, messages))
 

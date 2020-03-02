@@ -48,6 +48,9 @@ from werkzeug.utils import secure_filename
 from webwhatsapi import MessageGroup, WhatsAPIDriver, WhatsAPIDriverStatus
 from webwhatsapi.objects.whatsapp_object import WhatsappObject
 
+# Socket.io
+from flask_socketio import SocketIO, emit
+
 '''
 ###########################
 ##### CLASS DEFINITION ####
@@ -113,6 +116,9 @@ class WhatsAPIJSONEncoder(JSONEncoder):
 app = Flask(__name__)
 app.json_encoder = WhatsAPIJSONEncoder
 
+# Socket.io
+socketio = SocketIO(app)
+
 # Logger
 logger = None
 log_file = 'log.txt'
@@ -122,7 +128,7 @@ drivers = dict()
 # Store all timer objects for each client user
 timers = dict()
 # Store list of semaphores
-semaphores = dict()
+# semaphores = dict()
 
 # API key needed for auth with this API, change as per usage
 API_KEY = '5ohsRCA8os7xW7arVagm3O861lMZwFfl'
@@ -136,6 +142,34 @@ CHROME_IS_HEADLESS = True
 CHROME_CACHE_PATH = BASE_DIR + '/sample/flask/chrome_cache/'
 CHROME_DISABLE_GPU = True
 CHROME_WINDOW_SIZE = "910,512"
+
+
+
+'''
+##############################
+##### WEBSOCKET - SOCKETIO ####
+##############################
+'''
+
+@socketio.on('my event')
+def test_message(message):
+    print("received message event")
+    emit('my response', {'data': message['data']})
+
+@socketio.on('my broadcast event')
+def test_message(message):
+    print("received message boradcast")
+    emit('my response', {'data': message['data']}, broadcast=True)
+
+@socketio.on('connect')
+def test_connect():
+    print("new connection")
+    emit('my response', {'data': 'Connected'})
+
+@socketio.on('disconnect')
+def test_disconnect():
+    print('Client disconnected')
+
 
 
 '''
@@ -174,6 +208,7 @@ def init_driver(client_id):
     @return webwhatsapi object
     """
 
+    print("start init driver")
     # Create profile directory if it does not exist
     profile_path = CHROME_CACHE_PATH + str(client_id)
     if not os.path.exists(profile_path):
@@ -193,9 +228,10 @@ def init_driver(client_id):
     d = WhatsAPIDriver(
         username=client_id, 
         profile=profile_path, 
-        client='chrome', 
-        chrome_options=chrome_options
+        client='remote',
+        command_executor=os.environ["SELENIUM"]
     )
+    print("done init driver")
     return d
 
 
@@ -221,8 +257,8 @@ def delete_client(client_id, preserve_cache):
         try:
             timers[client_id].stop()
             timers[client_id] = None
-            release_semaphore(client_id)
-            semaphores[client_id] = None
+            # release_semaphore(client_id)
+            # semaphores[client_id] = None
         except:
             pass
 
@@ -255,9 +291,11 @@ def check_new_messages(client_id):
         timers[client_id].stop()
         return
 
-    # Acquire a lock on thread
-    if not acquire_semaphore(client_id, True):
-        return
+    # # Acquire a lock on thread
+    # if not acquire_semaphore(client_id, True):
+    #     return
+
+
 
     try:
         # Get all unread messages
@@ -266,15 +304,19 @@ def check_new_messages(client_id):
         for message_group in res:
             message_group.chat.send_seen()
         # Release thread lock
-        release_semaphore(client_id)
+        # release_semaphore(client_id)
         # If we have new messages, do something with it
         if res:
             print(res)
+            socketio.emit('my response', {'data': "new message"})
+            emit('my response', "check new messages")
+
     except:
         pass
     finally:
+        pass
         # Release lock anyway, safekeeping
-        release_semaphore(client_id)
+        # release_semaphore(client_id)
 
 
 def get_client_info(client_id):
@@ -363,27 +405,27 @@ def create_static_profile_path(client_id):
     return profile_path
 
 
-def acquire_semaphore(client_id, cancel_if_locked=False):
-    if not client_id:
-        return False
-
-    if client_id not in semaphores:
-        semaphores[client_id] = threading.Semaphore()
-
-    timeout = 10
-    if cancel_if_locked:
-        timeout = 0
-
-    val = semaphores[client_id].acquire(blocking=True, timeout=timeout)
-
-    return val
-
-def release_semaphore(client_id):
-    if not client_id:
-        return False
-
-    if client_id in semaphores:
-        semaphores[client_id].release()
+# def acquire_semaphore(client_id, cancel_if_locked=False):
+#     if not client_id:
+#         return False
+#
+#     if client_id not in semaphores:
+#         semaphores[client_id] = threading.Semaphore()
+#
+#     timeout = 10
+#     if cancel_if_locked:
+#         timeout = 0
+#
+#     val = semaphores[client_id].acquire(blocking=True, timeout=timeout)
+#
+#     return val
+#
+# def release_semaphore(client_id):
+#     if not client_id:
+#         return False
+#
+#     if client_id in semaphores:
+#         semaphores[client_id].release()
 
 
 @app.before_request
@@ -397,7 +439,8 @@ def before_request():
     client_id: to identify for which client the request is to be run
     """
     global logger
-    
+
+
     if not request.url_rule:
         abort(404)
 
@@ -416,7 +459,7 @@ def before_request():
     if not g.client_id and rule_parent != 'admin':
         abort(400, 'client ID is mandatory')
 
-    acquire_semaphore(g.client_id)
+    # acquire_semaphore(g.client_id)
 
     # Create a driver object if not exist for client requests.
     if rule_parent != 'admin':
@@ -442,8 +485,8 @@ def before_request():
 def after_request(r):
     """This runs after every request end. Purpose is to release the lock acquired
     during staring of API request"""
-    if 'client_id' in g and g.client_id:
-        release_semaphore(g.client_id)
+    # if 'client_id' in g and g.client_id:
+    #     release_semaphore(g.client_id)
     return r
 
 
@@ -451,8 +494,8 @@ def after_request(r):
 
 @app.errorhandler(werkzeug.exceptions.InternalServerError)
 def on_bad_internal_server_error(e):
-    if 'client_id' in g and g.client_id:
-        release_semaphore(g.client_id)
+    # if 'client_id' in g and g.client_id:
+    #     release_semaphore(g.client_id)
     if type(e) is WebDriverException and 'chrome not reachable' in e.msg:
         drivers[g.client_id] = init_driver(g.client_id)
         return jsonify({'success': False,
@@ -517,12 +560,12 @@ def get_qr():
 @login_required
 def get_unread_messages():
     """Get all unread messages"""
-    mark_seen = request.args.get('mark_seen', True)
+    #mark_seen = request.args.get('mark_seen', True)
     unread_msg = g.driver.get_unread()
 
-    if mark_seen:
-        for msg in unread_msg:
-            msg.chat.send_seen()
+   # if mark_seen:
+   #     for msg in unread_msg:
+   #         msg.chat.send_seen()
 
     return jsonify(unread_msg)
 
@@ -655,8 +698,8 @@ def kill_clients():
             try:
                 timers[client].stop()
                 timers[client] = None
-                release_semaphore(client)
-                semaphores[client] = None
+                # release_semaphore(client)
+                # semaphores[client] = None
             except:
                 pass
 
@@ -676,4 +719,19 @@ def hello():
 
 if __name__ == '__main__':
     # todo: load presaved active client ids
-    app.run()
+    #app.run(host='0.0.0.0')
+    socketio.run(app, port=5000, host='0.0.0.0')
+
+
+# kill -9 151
+#    74  python sample/flask/webapi.py &
+#    75  curl -X put -H "auth-key: 5ohsRCA8os7xW7arVagm3O861lMZwFfl" -d 'clients=20' http://127.0.0.1:5000/admin/clients
+#    76  curl -X get -H "auth-key: 5ohsRCA8os7xW7arVagm3O861lMZwFfl" -H "client_id: 20"  http://127.0.0.1:5000/messages/unread
+#    77  curl -X get -H "auth-key: 5ohsRCA8os7xW7arVagm3O861lMZwFfl" -H "client_id: 20"  http://127.0.0.1:5000/messages/unread
+#    78  curl -X get -H "auth-key: 5ohsRCA8os7xW7arVagm3O861lMZwFfl" -H "client_id: 20"  http://127.0.0.1:5000/messages/unread
+#    79  curl -X get -H "auth-key: 5ohsRCA8os7xW7arVagm3O861lMZwFfl" -H "client_id: 20"  http://127.0.0.1:5000/contacts
+#    80  curl -X get -H "auth-key: 5ohsRCA8os7xW7arVagm3O861lMZwFfl" -H "client_id: 20"  http://127.0.0.1:5000/messages/unread
+#    81  s
+
+#
+# pip install requests werkzeug flask
