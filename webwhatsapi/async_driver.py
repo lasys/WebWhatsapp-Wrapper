@@ -13,6 +13,8 @@ from functools import partial
 from io import BytesIO
 from selenium.common.exceptions import TimeoutException
 
+import requests
+
 from . import WhatsAPIDriver
 
 logger = getLogger(__name__)
@@ -166,9 +168,7 @@ class WhatsAPIDriverAsync:
             yield await self.get_contact_from_id(admin_id)
 
     async def download_file(self, url):
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as resp:
-                return await resp.read()
+        return await requests.get(url).content
 
     async def download_media(self, media_msg, force_download=False):
         if not force_download:
@@ -177,8 +177,11 @@ class WhatsAPIDriverAsync:
                     return BytesIO(b64decode(media_msg.content))
             except AttributeError:
                 pass
-
+        print("download_media #1")
         file_data = await self.download_file(media_msg.client_url)
+
+        if not file_data:
+            raise Exception('Impossible to download file')
 
         media_key = b64decode(media_msg.media_key)
         derivative = HKDFv3().deriveSecrets(media_key,

@@ -98,8 +98,15 @@ class MediaMessage(Message):
         # gets full media
         filename = os.path.join(path, self.filename)
         ioobj = self.driver.download_media(self, force_download)
+
         with open(filename, "wb") as f:
             f.write(ioobj.getvalue())
+
+        if "audio" in self.mime:
+            os.system("ffmpeg -y -i " + str(filename) + " -acodec libmp3lame " + str(filename) + ".mp3")
+            self.mime = "audio/mp3;"
+            return filename + ".mp3"
+
         return filename
 
     def __repr__(self):

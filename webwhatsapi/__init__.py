@@ -69,7 +69,7 @@ class WhatsAPIDriver(object):
 
     _SELECTORS = {
         'firstrun': "#wrapper",
-        'qrCode': "img[alt=\"Scan me!\"]",
+        'qrCode': "canvas[aria-label=\"Scan me!\"]",
         'qrCodePlain': "div[data-ref]",
         'mainPage': ".app.two",
         'chatList': ".infinite-list-viewport",
@@ -367,9 +367,9 @@ class WhatsAPIDriver(object):
         unread_messages = []
         for raw_message_group in raw_message_groups:
             chat = factory_chat(raw_message_group, self)
-            messages = list(
+            messages = list(filter(None, [factory_message(message, self) for message in raw_message_group['messages']]))
                # filter(None.__ne__, [factory_message(message, self) for message in raw_message_group['messages']]))
-                [factory_message(message, self) for message in raw_message_group['messages']])
+               # [factory_message(message, self) for message in raw_message_group['messages']])
             messages.sort(key=lambda message: message.timestamp)
             unread_messages.append(MessageGroup(chat, messages))
 

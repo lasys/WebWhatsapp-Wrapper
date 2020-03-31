@@ -51,6 +51,7 @@ from webwhatsapi.objects.whatsapp_object import WhatsappObject
 # Socket.io
 from flask_socketio import SocketIO, emit
 
+
 '''
 ###########################
 ##### CLASS DEFINITION ####
@@ -135,7 +136,7 @@ API_KEY = '5ohsRCA8os7xW7arVagm3O861lMZwFfl'
 # File type allowed to be sent or received
 ALLOWED_EXTENSIONS = ('avi', 'mp4', 'png', 'jpg', 'jpeg', 'gif', 'mp3', 'doc', 'docx', 'pdf')
 # Path to temporarily store static files like images
-STATIC_FILES_PATH = 'static/'
+IMAGES_FILES_PATH = BASE_DIR + '/sample/flask/images/'
 
 # Seleneium Webdriver configuration
 CHROME_IS_HEADLESS = True
@@ -296,27 +297,27 @@ def check_new_messages(client_id):
     #     return
 
 
-
-    try:
-        # Get all unread messages
-        res = drivers[client_id].get_unread()
-        # Mark all of them as seen
-        for message_group in res:
-            message_group.chat.send_seen()
-        # Release thread lock
-        # release_semaphore(client_id)
-        # If we have new messages, do something with it
-        if res:
-            print(res)
-            socketio.emit('my response', {'data': "new message"})
-            emit('my response', "check new messages")
-
-    except:
-        pass
-    finally:
-        pass
-        # Release lock anyway, safekeeping
-        # release_semaphore(client_id)
+    #
+    # try:
+    #     # Get all unread messages
+    #     res = drivers[client_id].get_unread()
+    #     # Mark all of them as seen
+    #     for message_group in res:
+    #         message_group.chat.send_seen()
+    #     # Release thread lock
+    #     # release_semaphore(client_id)
+    #     # If we have new messages, do     something with it
+    #     if res:
+    #         print(res)
+    #         socketio.emit('my response', {'data': "new message"})
+    #         emit('my response', "check new messages")
+    #
+    # except:
+    #     pass
+    # finally:
+    #     pass
+    #     # Release lock anyway, safekeeping
+    #     # release_semaphore(client_id)
 
 
 def get_client_info(client_id):
@@ -399,7 +400,7 @@ def create_static_profile_path(client_id):
     @param client_id: ID of client user
     @return string profile path
     """
-    profile_path = os.path.join(STATIC_FILES_PATH, str(client_id))
+    profile_path = os.path.join(IMAGES_FILES_PATH, str(client_id))
     if not os.path.exists(profile_path):
         os.makedirs(profile_path)
     return profile_path
@@ -538,7 +539,7 @@ def get_screen():
     at qr scanning phase, return the image of qr only, else return image of full
     screen"""
     img_title = 'screen_' + g.client_id + '.png'
-    image_path = STATIC_FILES_PATH + img_title
+    image_path = IMAGES_FILES_PATH + img_title
     if g.driver_status != WhatsAPIDriverStatus.LoggedIn:
         try:
             g.driver.get_qr(image_path)
@@ -595,7 +596,7 @@ def get_messages(chat_id):
     mark_seen = request.args.get('mark_seen', True)
 
     chat = g.driver.get_chat_from_id(chat_id)
-    msgs = list(g.driver.get_all_messages_in_chat(chat))
+    msgs = list(g.driver.get_all_messages_in_chat(chat, include_me=True))
 
     for msg in msgs:
         print(msg.id)
@@ -642,8 +643,8 @@ def download_message_media(msg_id):
         abort(404)
 
     profile_path = create_static_profile_path(g.client_id)
-    filename = message.save_media(profile_path, True)
-
+    filename = message.save_media(IMAGES_FILES_PATH, True)
+    print("filename: " + str(filename))
     if os.path.exists(filename):
         return send_file(filename, mimetype=message.mime)
 

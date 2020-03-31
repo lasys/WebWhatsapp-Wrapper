@@ -66,8 +66,21 @@ if (!window.Store) {
                 }
             }
         }
-
-        webpackJsonp([], { 'parasite': (x, y, z) => getStore(z) }, ['parasite']);
+        // https://github.com/Theblood/Wapi_NEW/blob/master/wapi.js
+        if (typeof webpackJsonp === 'function') {
+        webpackJsonp([], {'parasite': (x, y, z) => getStore(z)}, ['parasite']);
+            } else {
+                webpackJsonp.push([
+                    ['parasite'],
+                    {
+                        parasite: function (o, e, t) {
+                            getStore(t);
+                        }
+                    },
+                    [['parasite']]
+                ]);
+            }
+       //  webpackJsonp([], { 'parasite': (x, y, z) => getStore(z) }, ['parasite']);
     })();
 }
 
