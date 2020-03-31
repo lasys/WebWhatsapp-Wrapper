@@ -6,3 +6,8 @@ cryptography
 typing
 numpy
 python-magic
+requests
+werkzeug
+flask
+flask-socketio
+pydub

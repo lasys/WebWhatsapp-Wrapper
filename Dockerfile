@@ -4,6 +4,8 @@ FROM python:2.7
 # Set the working directory to /app
 WORKDIR /app
 
+RUN apt-get update && apt-get install ffmpeg libavcodec-extra screen -y
+
 # COPY requirements to /app dir
 COPY requirements.txt /app
 
