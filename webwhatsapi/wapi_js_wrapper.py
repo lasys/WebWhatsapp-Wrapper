@@ -101,7 +101,7 @@ class JsArg(object):
         :return: JS literal represented in a string
         """
         if isinstance(self.obj, string_types):
-            return repr(str(self.obj))
+            return repr(str(self.obj.encode('iso-8859-15')))
 
         if isinstance(self.obj, bool):
             return str(self.obj).lower()
