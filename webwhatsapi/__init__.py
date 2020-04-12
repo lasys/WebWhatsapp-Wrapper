@@ -105,9 +105,19 @@ class WhatsAPIDriver(object):
         return self.driver.execute_script('return window.localStorage;')
 
     def set_local_storage(self, data):
-        self.driver.execute_script(''.join(
-            ["window.localStorage.setItem('{}', '{}');".format(k, v.replace("\n", "\\n") if isinstance(v, str) else v)
-             for k, v in data.items()]))
+        print(data.items())
+        commands = ''
+        for k, v in data.items():
+            # skip data with this key, because encoding failure \U.. makes trouble
+            if "oAhcScYvi3l3Fn5evoIR0A" in str(k):
+                continue
+            if isinstance(v, str):
+                v.replace("\n", "\\n")
+            commands += "window.localStorage.setItem('{}', '{}');".format(k, v)
+        self.driver.execute_script(commands)
+        # self.driver.execute_script(''.join(
+        #     ["window.localStorage.setItem('{}', '{}');".format(k, v.replace("\n", "\\n") if isinstance(v, str) else v)
+        #      for k, v in data.items()]))
 
     def save_firefox_profile(self, remove_old=False):
         """Function to save the firefox profile to the permanant one"""

@@ -232,6 +232,8 @@ def init_driver(client_id):
         client='remote',
         command_executor=os.environ["SELENIUM"]
     )
+
+
     print("done init driver")
     return d
 
@@ -342,7 +344,9 @@ def get_client_info(client_id):
         is_alive = True
     if driver_status == WhatsAPIDriverStatus.LoggedIn:
         is_logged_in = True
-    
+
+    drivers[client_id].save_firefox_profile(remove_old=True)
+
     return {
         "is_alive": is_alive,
         "is_logged_in": is_logged_in,
@@ -502,7 +506,9 @@ def on_bad_internal_server_error(e):
         return jsonify({'success': False,
                         'message': 'For some reason, browser for client ' + g.client_id + ' has closed. Please, try get QrCode again'})
     else:
+        socketio.stop()
         raise e
+
 
 
 '''
@@ -722,7 +728,6 @@ if __name__ == '__main__':
     # todo: load presaved active client ids
     #app.run(host='0.0.0.0')
     socketio.run(app, port=5000, host='0.0.0.0')
-
 
 # kill -9 151
 #    74  python sample/flask/webapi.py &
