@@ -137,6 +137,8 @@ class JsFunction(object):
                 retry_command = getattr(self.wapi_wrapper, self.function_name)
                 retry_command.is_a_retry = True
                 retry_command(*args, **kwargs)
+            # elif 'Timed out' in e.msg:
+            #
             else:
                 raise JsException(
                     "Error in function {0} ({1}). Command: {2}".format(self.function_name, e.msg, command))

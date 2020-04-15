@@ -96,18 +96,21 @@ class MediaMessage(Message):
 
     def save_media(self, path, force_download=False):
         # gets full media
-        filename = os.path.join(path, self.filename)
-        ioobj = self.driver.download_media(self, force_download)
+        try:
+            filename = os.path.join(path, self.filename)
+            ioobj = self.driver.download_media(self, force_download)
 
-        with open(filename, "wb") as f:
-            f.write(ioobj.getvalue())
+            with open(filename, "wb") as f:
+                f.write(ioobj.getvalue())
 
-        if "audio" in self.mime:
-            os.system("ffmpeg -y -i " + str(filename) + " -acodec libmp3lame " + str(filename) + ".mp3")
-            self.mime = "audio/mp3;"
-            return filename + ".mp3"
+            if "audio" in self.mime:
+                os.system("ffmpeg -y -i " + str(filename) + " -acodec libmp3lame " + str(filename) + ".mp3")
+                self.mime = "audio/mp3;"
+                return filename + ".mp3"
 
-        return filename
+            return filename
+        except:
+            return None
 
     def __repr__(self):
         return "<MediaMessage - {type} from {sender} at {timestamp} ({filename})>".format(

@@ -652,9 +652,10 @@ def download_message_media(msg_id):
 
     profile_path = create_static_profile_path(g.client_id)
     filename = message.save_media(IMAGES_FILES_PATH, True)
-    #print("filename: " + str(filename))
-    if os.path.exists(filename):
-        return send_file(filename, mimetype=message.mime)
+    if filename != None:
+        #print("filename: " + str(filename))
+        if os.path.exists(filename):
+            return send_file(filename, mimetype=message.mime)
 
     abort(404)
 
