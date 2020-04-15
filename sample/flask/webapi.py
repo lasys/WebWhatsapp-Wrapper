@@ -127,7 +127,7 @@ log_level = logging.INFO
 # Driver store all the instances of webdriver for each of the client user
 drivers = dict()
 # Store all timer objects for each client user
-timers = dict()
+#timers = dict()
 # Store list of semaphores
 # semaphores = dict()
 
@@ -258,8 +258,9 @@ def delete_client(client_id, preserve_cache):
     if client_id in drivers:
         drivers.pop(client_id).quit()
         try:
-            timers[client_id].stop()
-            timers[client_id] = None
+            pass
+            #[client_id].stop()
+            #timers[client_id] = None
             # release_semaphore(client_id)
             # semaphores[client_id] = None
         except:
@@ -275,9 +276,10 @@ def init_timer(client_id):
     
     @param client_id: ID of clinet user
     """
-    if client_id in timers and timers[client_id]:
-        timers[client_id].start()
-        return
+    pass
+    # if client_id in timers and timers[client_id]:
+    #     timers[client_id].start()
+    #     return
     # Create a timer to call check_new_message function after every 2 seconds.
     # client_id param is needed to be passed to check_new_message
     # timers[client_id] = RepeatedTimer(2, check_new_messages, client_id)
@@ -350,7 +352,7 @@ def get_client_info(client_id):
     return {
         "is_alive": is_alive,
         "is_logged_in": is_logged_in,
-        "is_timer": bool(timers[client_id]) and timers[client_id].is_running
+       # "is_timer": bool(timers[client_id]) and timers[client_id].is_running
     }
 
 
@@ -703,8 +705,9 @@ def kill_clients():
         if kill_dead and not drivers[client].is_logged_in() or client in clients:
             drivers.pop(client).quit()
             try:
-                timers[client].stop()
-                timers[client] = None
+                pass
+                # timers[client].stop()
+                # timers[client] = None
                 # release_semaphore(client)
                 # semaphores[client] = None
             except:
