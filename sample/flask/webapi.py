@@ -280,7 +280,7 @@ def init_timer(client_id):
         return
     # Create a timer to call check_new_message function after every 2 seconds.
     # client_id param is needed to be passed to check_new_message
-    timers[client_id] = RepeatedTimer(2, check_new_messages, client_id)
+    # timers[client_id] = RepeatedTimer(2, check_new_messages, client_id)
 
 
 def check_new_messages(client_id):
@@ -290,10 +290,10 @@ def check_new_messages(client_id):
     """
     # Return if driver is not defined or if whatsapp is not logged in.
     # Stop the timer as well
-    if client_id not in drivers or not drivers[client_id] or not drivers[client_id].is_logged_in():
-        timers[client_id].stop()
-        return
-
+    #if client_id not in drivers or not drivers[client_id] or not drivers[client_id].is_logged_in():
+    #    timers[client_id].stop()
+    #    return
+    pass
     # # Acquire a lock on thread
     # if not acquire_semaphore(client_id, True):
     #     return
@@ -604,8 +604,8 @@ def get_messages(chat_id):
     chat = g.driver.get_chat_from_id(chat_id)
     msgs = list(g.driver.get_all_messages_in_chat(chat, include_me=True))
 
-    for msg in msgs:
-        print(msg.id)
+   # for msg in msgs:
+   #     print(msg.id)
 
     if mark_seen:
         for msg in msgs:
@@ -650,7 +650,7 @@ def download_message_media(msg_id):
 
     profile_path = create_static_profile_path(g.client_id)
     filename = message.save_media(IMAGES_FILES_PATH, True)
-    print("filename: " + str(filename))
+    #print("filename: " + str(filename))
     if os.path.exists(filename):
         return send_file(filename, mimetype=message.mime)
 
