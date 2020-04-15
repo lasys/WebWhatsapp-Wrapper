@@ -601,7 +601,9 @@ def get_chats():
 def get_messages(chat_id):
     """Return all of the chat messages"""
 
-    mark_seen = request.args.get('mark_seen', True)
+    # mark_seen = request.args.get('mark_seen', True
+    # always send seen
+    mark_seen = True
 
     chat = g.driver.get_chat_from_id(chat_id)
     msgs = list(g.driver.get_all_messages_in_chat(chat, include_me=True))
@@ -626,19 +628,21 @@ def send_message(chat_id):
     If a media file is found, send_media is called, else a simple text message
     is sent
     """
+    try:
+        files = request.files
 
-    files = request.files
+        if files:
+            res = send_media(chat_id, request)
+        else:
+            message = request.form.get('message')
+            res = g.driver.chat_send_message(chat_id, message)
 
-    if files:
-        res = send_media(chat_id, request)
-    else:
-        message = request.form.get('message')
-        res = g.driver.chat_send_message(chat_id, message)
-
-    if res:
-        return jsonify(res)
-    else:
-        return False
+        if res:
+            return jsonify(res)
+        else:
+            return False
+    except:
+        abort(500)
 
 
 @app.route('/messages/<msg_id>/download', methods=['GET'])
