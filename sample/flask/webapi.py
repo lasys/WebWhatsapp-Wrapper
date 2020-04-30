@@ -740,7 +740,7 @@ def hello():
 def search_youtube():
     query = request.args["q"]
 
-    r = requests.get('https://www.youtube.com/results?search_query=' + query)  # luca+hänni
+    r = requests.get('https://www.youtube.com/results?search_query=' + query)  
     # remove all whitespace, tabs, newlines, ..
     clean = re.sub(r"[\n\t\s]*", "", r.text)
 
