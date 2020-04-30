@@ -35,6 +35,8 @@ import sys
 import time
 import threading
 import werkzeug
+import re
+
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, BASE_DIR)
@@ -730,6 +732,45 @@ def get_last_exception():
 @app.route("/")
 def hello():
     return "API is running"
+
+
+# --------------------------- Custom methods ----------------------------------
+
+@app.route('/youtube')
+def search_youtube():
+    query = request.args["q"]
+
+    r = requests.get('https://www.youtube.com/results?search_query=' + query)  # luca+hänni
+    # remove all whitespace, tabs, newlines, ..
+    clean = re.sub(r"[\n\t\s]*", "", r.text)
+
+    findstr = '<h3class="yt-lockup-title"><ahref="/watch?v='
+    # search for occurrences of findstr in response
+    res = [i for i in range(len(clean)) if clean.startswith(findstr, i)]
+
+    results = []
+
+    for result in res:
+        titleObj = 'title="'
+        t = clean[result + len(findstr):].find(titleObj)
+        tt = clean[result + len(findstr) + len(titleObj) + t:].find('"')
+        title = clean[result + len(findstr) + len(titleObj) + t:result + len(findstr) + len(titleObj) + t + tt]
+
+        st = clean[result + len(findstr):].find('"')
+        und = clean[result + len(findstr):].find('&')
+        if und < st:
+            videoid = clean[result + len(findstr):result + len(findstr) + und]
+        else:
+            videoid = clean[result + len(findstr):result + len(findstr) + st]
+
+        results.append({"title": title, "videoId": videoid})
+
+    response = {
+        "query": query,
+        "results": results,
+    }
+
+    return response
 
 
 if __name__ == '__main__':
