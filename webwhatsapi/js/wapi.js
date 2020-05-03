@@ -707,6 +707,7 @@ window.WAPI.ReplyMessage = function (idMessage, message, done) {
                             continue;
                         }
                         done(WAPI._serializeMessageObj(msg));
+                        done(WAPI._serializeMessageObj(msg));
                         return True;
                     }
                     trials += 1;

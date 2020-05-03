@@ -571,8 +571,9 @@ class WhatsAPIDriver(object):
             yield factory_chat(group, self)
 
     def chat_send_message(self, chat_id, message):
+        print("driver send message")
         result = self.wapi_functions.sendMessage(chat_id, message)
-
+        print("driver send message - result ")
         if not isinstance(result, bool):
             return factory_message(result, self)
         return result

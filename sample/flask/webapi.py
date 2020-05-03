@@ -26,6 +26,7 @@ DATE		PROGRAMMER		COMMENT
 *****************************************************************/
 '''
 
+import emoji
 import json
 import logging
 import os
@@ -510,6 +511,7 @@ def on_bad_internal_server_error(e):
         return jsonify({'success': False,
                         'message': 'For some reason, browser for client ' + g.client_id + ' has closed. Please, try get QrCode again'})
     else:
+        print(e)
         socketio.stop()
         raise e
 
@@ -630,21 +632,17 @@ def send_message(chat_id):
     If a media file is found, send_media is called, else a simple text message
     is sent
     """
-    try:
-        files = request.files
+    files = request.files
 
-        if files:
-            res = send_media(chat_id, request)
-        else:
-            message = request.form.get('message')
-            res = g.driver.chat_send_message(chat_id, message)
-
-        if res:
-            return jsonify(res)
-        else:
-            return False
-    except:
-        abort(500)
+    if files:
+        res = send_media(chat_id, request)
+    else:
+        message = request.form.get('message')
+        res = g.driver.chat_send_message(chat_id, emoji.emojize(message))
+    if res:
+        return jsonify(res)
+    else:
+        return False
 
 
 @app.route('/messages/<msg_id>/download', methods=['GET'])
@@ -740,7 +738,7 @@ def hello():
 def search_youtube():
     query = request.args["q"]
 
-    r = requests.get('https://www.youtube.com/results?search_query=' + query)  
+    r = requests.get('https://www.youtube.com/results?search_query=' + query)
     # remove all whitespace, tabs, newlines, ..
     clean = re.sub(r"[\n\t\s]*", "", r.text)
 
