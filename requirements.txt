@@ -11,4 +11,4 @@ werkzeug
 flask
 flask-socketio
 pydub
-emojis
+emoji
