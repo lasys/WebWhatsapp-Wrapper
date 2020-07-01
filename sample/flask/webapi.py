@@ -741,27 +741,21 @@ def search_youtube():
     r = requests.get('https://www.youtube.com/results?search_query=' + query)
     # remove all whitespace, tabs, newlines, ..
     clean = re.sub(r"[\n\t\s]*", "", r.text)
-
-    findstr = '<h3class="yt-lockup-title"><ahref="/watch?v='
-    # search for occurrences of findstr in response
-    res = [i for i in range(len(clean)) if clean.startswith(findstr, i)]
-
+    startstr = 'window["ytInitialData"]='
+    endstr = 'window["ytInitialPlayerResponse"]'
+    startstrIndex = clean.find(startstr)
+    endstrIndex = clean.find(endstr)
+    result1 = clean[startstrIndex + len(startstr):endstrIndex - 1]
+    result_json = json.loads(result1)
     results = []
-
-    for result in res:
-        titleObj = 'title="'
-        t = clean[result + len(findstr):].find(titleObj)
-        tt = clean[result + len(findstr) + len(titleObj) + t:].find('"')
-        title = clean[result + len(findstr) + len(titleObj) + t:result + len(findstr) + len(titleObj) + t + tt]
-
-        st = clean[result + len(findstr):].find('"')
-        und = clean[result + len(findstr):].find('&')
-        if und < st:
-            videoid = clean[result + len(findstr):result + len(findstr) + und]
-        else:
-            videoid = clean[result + len(findstr):result + len(findstr) + st]
-
-        results.append({"title": title, "videoId": videoid})
+    videos = \
+    result_json["contents"]["twoColumnSearchResultsRenderer"]["primaryContents"]["sectionListRenderer"]["contents"][0][
+        "itemSectionRenderer"]["contents"]
+    for v in videos:
+        if "videoRenderer" in v:
+            videoid = v["videoRenderer"]["videoId"]
+            title = v["videoRenderer"]["title"]["runs"][0]["text"]
+            results.append({"title": title, "videoId": videoid})
 
     response = {
         "query": query,
