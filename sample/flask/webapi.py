@@ -37,6 +37,7 @@ import time
 import threading
 import werkzeug
 import re
+import telegram_bot
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -764,10 +765,16 @@ def search_youtube():
 
     return response
 
+@app.route('/telegrambot/help')
+def telegram_bot_help():
+    telegram_bot.start_notification(None, None)
+    return "Ok"
 
 if __name__ == '__main__':
     # todo: load presaved active client ids
     #app.run(host='0.0.0.0')
+    telegrambot = threading.Thread(target=telegram_bot.start_telegram_bot)
+    telegrambot.start()
     socketio.run(app, port=5000, host='0.0.0.0')
 
 # kill -9 151

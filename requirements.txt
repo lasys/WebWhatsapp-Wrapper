@@ -12,3 +12,4 @@ flask
 flask-socketio
 pydub
 emoji
+python-telegram-bot
