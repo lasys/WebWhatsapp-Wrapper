@@ -39,7 +39,6 @@ import werkzeug
 import re
 import telegram_bot
 
-
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, BASE_DIR)
 
@@ -55,19 +54,19 @@ from webwhatsapi.objects.whatsapp_object import WhatsappObject
 # Socket.io
 from flask_socketio import SocketIO, emit
 
-
 '''
 ###########################
 ##### CLASS DEFINITION ####
 ###########################
 '''
 
+
 class RepeatedTimer(object):
     '''
     A generic class that creates a timer of specified interval and calls the
     given function after that interval
     '''
-    
+
     def __init__(self, interval, function, *args, **kwargs):
         ''' Starts a timer of given interval
         @param self:
@@ -76,11 +75,11 @@ class RepeatedTimer(object):
         @param *args: args to pass to the called functions
         @param *kwargs: args to pass to the called functions
         '''
-        self._timer     = None
-        self.interval   = interval
-        self.function   = function
-        self.args       = args
-        self.kwargs     = kwargs
+        self._timer = None
+        self.interval = interval
+        self.function = function
+        self.args = args
+        self.kwargs = kwargs
         self.is_running = False
         self.start()
 
@@ -91,7 +90,7 @@ class RepeatedTimer(object):
 
     def start(self):
         """Creates a timer and start it"""
-        
+
         if not self.is_running:
             self._timer = threading.Timer(self.interval, self._run)
             self._timer.start()
@@ -101,6 +100,7 @@ class RepeatedTimer(object):
         """Stop the timer"""
         self._timer.cancel()
         self.is_running = False
+
 
 class WhatsAPIJSONEncoder(JSONEncoder):
     def default(self, obj):
@@ -131,7 +131,7 @@ log_level = logging.INFO
 # Driver store all the instances of webdriver for each of the client user
 drivers = dict()
 # Store all timer objects for each client user
-#timers = dict()
+# timers = dict()
 # Store list of semaphores
 # semaphores = dict()
 
@@ -148,33 +148,34 @@ CHROME_CACHE_PATH = BASE_DIR + '/sample/flask/chrome_cache/'
 CHROME_DISABLE_GPU = True
 CHROME_WINDOW_SIZE = "910,512"
 
-
-
 '''
 ##############################
 ##### WEBSOCKET - SOCKETIO ####
 ##############################
 '''
 
+
 @socketio.on('my event')
 def test_message(message):
     print("received message event")
     emit('my response', {'data': message['data']})
+
 
 @socketio.on('my broadcast event')
 def test_message(message):
     print("received message boradcast")
     emit('my response', {'data': message['data']}, broadcast=True)
 
+
 @socketio.on('connect')
 def test_connect():
     print("new connection")
     emit('my response', {'data': 'Connected'})
 
+
 @socketio.on('disconnect')
 def test_disconnect():
     print('Client disconnected')
-
 
 
 '''
@@ -183,12 +184,14 @@ def test_disconnect():
 ##############################
 '''
 
+
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if g.driver_status != WhatsAPIDriverStatus.LoggedIn:
             return jsonify({"error": "client is not logged in"})
         return f(*args, **kwargs)
+
     return decorated_function
 
 
@@ -218,7 +221,7 @@ def init_driver(client_id):
     profile_path = CHROME_CACHE_PATH + str(client_id)
     if not os.path.exists(profile_path):
         os.makedirs(profile_path)
-    
+
     # Options to customize chrome window
     chrome_options = [
         'window-size=' + CHROME_WINDOW_SIZE,
@@ -228,15 +231,14 @@ def init_driver(client_id):
         chrome_options.append('--headless')
     if CHROME_DISABLE_GPU:
         chrome_options.append('--disable-gpu')
-    
+
     # Create a whatsapidriver object
     d = WhatsAPIDriver(
-        username=client_id, 
-        profile=profile_path, 
+        username=client_id,
+        profile=profile_path,
         client='remote',
         command_executor=os.environ["SELENIUM"]
     )
-
 
     print("done init driver")
     return d
@@ -263,8 +265,8 @@ def delete_client(client_id, preserve_cache):
         drivers.pop(client_id).quit()
         try:
             pass
-            #[client_id].stop()
-            #timers[client_id] = None
+            # [client_id].stop()
+            # timers[client_id] = None
             # release_semaphore(client_id)
             # semaphores[client_id] = None
         except:
@@ -296,14 +298,13 @@ def check_new_messages(client_id):
     """
     # Return if driver is not defined or if whatsapp is not logged in.
     # Stop the timer as well
-    #if client_id not in drivers or not drivers[client_id] or not drivers[client_id].is_logged_in():
+    # if client_id not in drivers or not drivers[client_id] or not drivers[client_id].is_logged_in():
     #    timers[client_id].stop()
     #    return
     pass
     # # Acquire a lock on thread
     # if not acquire_semaphore(client_id, True):
     #     return
-
 
     #
     # try:
@@ -346,7 +347,7 @@ def get_client_info(client_id):
     is_alive = False
     is_logged_in = False
     if (driver_status == WhatsAPIDriverStatus.NotLoggedIn
-        or driver_status == WhatsAPIDriverStatus.LoggedIn):
+            or driver_status == WhatsAPIDriverStatus.LoggedIn):
         is_alive = True
     if driver_status == WhatsAPIDriverStatus.LoggedIn:
         is_logged_in = True
@@ -356,7 +357,7 @@ def get_client_info(client_id):
     return {
         "is_alive": is_alive,
         "is_logged_in": is_logged_in,
-       # "is_timer": bool(timers[client_id]) and timers[client_id].is_running
+        # "is_timer": bool(timers[client_id]) and timers[client_id].is_running
     }
 
 
@@ -451,7 +452,6 @@ def before_request():
     """
     global logger
 
-
     if not request.url_rule:
         abort(404)
 
@@ -462,7 +462,7 @@ def before_request():
     auth_key = request.headers.get('auth-key')
     g.client_id = request.headers.get('client_id')
     rule_parent = request.url_rule.rule.split('/')[1]
-    
+
     if API_KEY and auth_key != API_KEY:
         abort(401, 'you must send valid auth-key')
         raise Exception()
@@ -476,19 +476,19 @@ def before_request():
     if rule_parent != 'admin':
         if g.client_id not in drivers:
             drivers[g.client_id] = init_client(g.client_id)
-        
+
         g.driver = drivers[g.client_id]
         g.driver_status = WhatsAPIDriverStatus.Unknown
-        
+
         if g.driver is not None:
             g.driver_status = g.driver.get_status()
-        
+
         # If driver status is unkown, means driver has closed somehow, reopen it
         if (g.driver_status != WhatsAPIDriverStatus.NotLoggedIn
-            and g.driver_status != WhatsAPIDriverStatus.LoggedIn):
+                and g.driver_status != WhatsAPIDriverStatus.LoggedIn):
             drivers[g.client_id] = init_client(g.client_id)
             g.driver_status = g.driver.get_status()
-        
+
         init_timer(g.client_id)
 
 
@@ -517,12 +517,12 @@ def on_bad_internal_server_error(e):
         raise e
 
 
-
 '''
 #####################
 ##### API ROUTES ####
 #####################
 '''
+
 
 # ---------------------------- Client -----------------------------------------
 
@@ -574,12 +574,12 @@ def get_qr():
 @login_required
 def get_unread_messages():
     """Get all unread messages"""
-    #mark_seen = request.args.get('mark_seen', True)
+    # mark_seen = request.args.get('mark_seen', True)
     unread_msg = g.driver.get_unread()
 
-   # if mark_seen:
-   #     for msg in unread_msg:
-   #         msg.chat.send_seen()
+    # if mark_seen:
+    #     for msg in unread_msg:
+    #         msg.chat.send_seen()
 
     return jsonify(unread_msg)
 
@@ -613,8 +613,8 @@ def get_messages(chat_id):
     chat = g.driver.get_chat_from_id(chat_id)
     msgs = list(g.driver.get_all_messages_in_chat(chat, include_me=True))
 
-   # for msg in msgs:
-   #     print(msg.id)
+    # for msg in msgs:
+    #     print(msg.id)
 
     if mark_seen:
         for msg in msgs:
@@ -622,7 +622,7 @@ def get_messages(chat_id):
                 msg.chat.send_seen()
             except:
                 pass
-    
+
     return jsonify(msgs)
 
 
@@ -658,7 +658,7 @@ def download_message_media(msg_id):
     profile_path = create_static_profile_path(g.client_id)
     filename = message.save_media(IMAGES_FILES_PATH, True)
     if filename != None:
-        #print("filename: " + str(filename))
+        # print("filename: " + str(filename))
         if os.path.exists(filename):
             return send_file(filename, mimetype=message.mime)
 
@@ -750,8 +750,9 @@ def search_youtube():
     result_json = json.loads(result1)
     results = []
     videos = \
-    result_json["contents"]["twoColumnSearchResultsRenderer"]["primaryContents"]["sectionListRenderer"]["contents"][0][
-        "itemSectionRenderer"]["contents"]
+        result_json["contents"]["twoColumnSearchResultsRenderer"]["primaryContents"]["sectionListRenderer"]["contents"][
+            0][
+            "itemSectionRenderer"]["contents"]
     for v in videos:
         if "videoRenderer" in v:
             videoid = v["videoRenderer"]["videoId"]
@@ -765,16 +766,24 @@ def search_youtube():
 
     return response
 
+
 @app.route('/telegrambot/help')
 def telegram_bot_help():
-    telegram_bot.start_notification(None, None)
-    return "Ok"
+    try:
+        telegram_bot.start_notification(None, None)
+        return "started notification via telegram"
+    except:
+        return "failed to start notification via telegram"
+
 
 if __name__ == '__main__':
     # todo: load presaved active client ids
-    #app.run(host='0.0.0.0')
-    telegrambot = threading.Thread(target=telegram_bot.start_telegram_bot)
-    telegrambot.start()
+    # app.run(host='0.0.0.0')
+    try:
+        telegrambot = threading.Thread(target=telegram_bot.start_telegram_bot)
+        telegrambot.start()
+    except:
+        print("telegram could not be started!")
     socketio.run(app, port=5000, host='0.0.0.0')
 
 # kill -9 151
