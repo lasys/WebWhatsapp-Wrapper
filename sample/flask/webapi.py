@@ -766,24 +766,24 @@ def search_youtube():
 
     return response
 
-
-@app.route('/telegrambot/help')
-def telegram_bot_help():
-    try:
-        telegram_bot.start_notification(None, None)
-        return "started notification via telegram"
-    except:
-        return "failed to start notification via telegram"
+# 
+# @app.route('/telegrambot/help')
+# def telegram_bot_help():
+#     try:
+#         telegram_bot.start_notification(None, None)
+#         return "started notification via telegram"
+#     except:
+#         return "failed to start notification via telegram"
 
 
 if __name__ == '__main__':
     # todo: load presaved active client ids
     # app.run(host='0.0.0.0')
-    try:
-        telegrambot = threading.Thread(target=telegram_bot.start_telegram_bot)
-        telegrambot.start()
-    except:
-        print("telegram could not be started!")
+    # try:
+    #     telegrambot = threading.Thread(target=telegram_bot.start_telegram_bot)
+    #     telegrambot.start()
+    # except:
+    #     print("telegram could not be started!")
     socketio.run(app, port=5000, host='0.0.0.0')
 
 # kill -9 151
