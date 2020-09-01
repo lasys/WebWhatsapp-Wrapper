@@ -37,7 +37,7 @@ import time
 import threading
 import werkzeug
 import re
-import telegram_bot
+# import telegram_bot
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, BASE_DIR)
@@ -766,7 +766,7 @@ def search_youtube():
 
     return response
 
-# 
+#
 # @app.route('/telegrambot/help')
 # def telegram_bot_help():
 #     try:
