@@ -742,8 +742,8 @@ def search_youtube():
     r = requests.get('https://www.youtube.com/results?search_query=' + query)
     # remove all whitespace, tabs, newlines, ..
     clean = re.sub(r"[\n\t\s]*", "", r.text)
-    startstr = 'window["ytInitialData"]='
-    endstr = 'window["ytInitialPlayerResponse"]'
+    startstr = 'varytInitialData='
+    endstr = '//scraper_data_end'
     startstrIndex = clean.find(startstr)
     endstrIndex = clean.find(endstr)
     result1 = clean[startstrIndex + len(startstr):endstrIndex - 1]
