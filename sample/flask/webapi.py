@@ -743,9 +743,9 @@ def search_youtube():
     # remove all whitespace, tabs, newlines, ..
     clean = re.sub(r"[\n\t\s]*", "", r.text)
     startstr = 'varytInitialData='
-    endstr = '//scraper_data_end'
+    endstr = '</script>'
     startstrIndex = clean.find(startstr)
-    endstrIndex = clean.find(endstr)
+    endstrIndex = clean.find(endstr, startstrIndex, -1)
     result1 = clean[startstrIndex + len(startstr):endstrIndex - 1]
     result_json = json.loads(result1)
     results = []
