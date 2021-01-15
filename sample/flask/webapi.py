@@ -651,7 +651,7 @@ def send_message(chat_id):
 def download_message_media(msg_id):
     """Download a media file"""
     message = g.driver.get_message_by_id(msg_id)
-
+    print(message)
     if not message or not message.mime:
         abort(404)
 

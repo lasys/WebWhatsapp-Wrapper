@@ -31,6 +31,9 @@ def factory_message(js_obj, driver):
     if js_obj["isMedia"]:
         return MediaMessage(js_obj, driver)
 
+    if js_obj["mimetype"] is not None and 'audio' in js_obj["mimetype"]:
+        return MediaMessage(js_obj, driver)
+
     if js_obj["isNotification"]:
         return NotificationMessage(js_obj, driver)
 
@@ -87,7 +90,7 @@ class MediaMessage(Message):
         super(MediaMessage, self).__init__(js_obj, driver)
 
         print(js_obj)
-        print(self)
+#        print(self)
         print(self._js_obj["mimetype"])
 
         self.size = self._js_obj["size"]
