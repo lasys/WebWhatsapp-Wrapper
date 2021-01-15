@@ -83,6 +83,10 @@ class MediaMessage(Message):
     def __init__(self, js_obj, driver=None):
         super(MediaMessage, self).__init__(js_obj, driver)
 
+        print(js_obj)
+        print(self)
+        print(self._js_obj["mimetype"])
+
         self.size = self._js_obj["size"]
         self.mime = self._js_obj["mimetype"]
         if "caption" in self._js_obj:
