@@ -55,7 +55,7 @@ if (!window.Store) {
            }
        });
    	
-   	window.Store.Chat.modelClass.prototype.sendMessage = function (e) {
+   	window.Store.sendMessage = function (e) {
    		window.Store.SendTextMsgToChat(this, ...arguments);
    	}		
    	
