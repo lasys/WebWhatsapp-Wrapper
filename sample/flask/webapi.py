@@ -653,6 +653,7 @@ def download_message_media(msg_id):
     message = g.driver.get_message_by_id(msg_id)
     print(message)
     if not message or not message.mime:
+        print("NO MESSAGE OR MESSAGE MIME while download message")
         abort(404)
 
     # profile_path = create_static_profile_path(g.client_id)
@@ -662,6 +663,7 @@ def download_message_media(msg_id):
         if os.path.exists(filename):
             return send_file(filename, mimetype=message.mime)
 
+    print("Message not found: 404!")
     abort(404)
 
 
