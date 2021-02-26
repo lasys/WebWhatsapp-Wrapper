@@ -19,8 +19,8 @@ def getContacts(x, driver):
 
 def factory_message(js_obj, driver):
     """Factory function for creating appropriate object given selenium JS object"""
-    print("factory_message:")
-    print(js_obj)
+    #print("factory_message:")
+    #print(js_obj)
 
     if js_obj is None:
         return
@@ -95,7 +95,7 @@ class MediaMessage(Message):
             self.caption = self._js_obj["caption"] or ""
 
         self.media_key = self._js_obj.get('mediaKey')
-        self.client_url = self._js_obj.get('clientUrl')
+        self.client_url = self._js_obj.get('deprecatedMms3Url')
 
         extension = mimetypes.guess_extension(self.mime)
         self.filename = ''.join([str(id(self)), extension or ''])
@@ -104,6 +104,7 @@ class MediaMessage(Message):
         # gets full media
         try:
             filename = os.path.join(path, self.filename)
+            print("save_media: filename: " + filename)
             ioobj = self.driver.download_media(self, force_download)
 
             with open(filename, "wb") as f:
@@ -116,6 +117,7 @@ class MediaMessage(Message):
 
             return filename
         except:
+            print("Failed to save media with path:" + str(path))
             return None
 
     def __repr__(self):

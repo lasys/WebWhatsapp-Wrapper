@@ -171,6 +171,7 @@ class WhatsAPIDriverAsync:
         return await requests.get(url).content
 
     async def download_media(self, media_msg, force_download=False):
+        print("download media")
         if not force_download:
             try:
                 if media_msg.content:

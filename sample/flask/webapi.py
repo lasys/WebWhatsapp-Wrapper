@@ -240,6 +240,9 @@ def init_driver(client_id):
         command_executor=os.environ["SELENIUM"]
     )
 
+    print("save firefox profile")
+    d.save_firefox_profile(remove_old=True)
+
     print("done init driver")
     return d
 
@@ -650,8 +653,9 @@ def send_message(chat_id):
 @login_required
 def download_message_media(msg_id):
     """Download a media file"""
+    print("Download file " + str(msg_id))
     message = g.driver.get_message_by_id(msg_id)
-    print(message)
+    print("Message mime:" + str(message.mime))
     if not message or not message.mime:
         print("NO MESSAGE OR MESSAGE MIME while download message")
         abort(404)
@@ -659,7 +663,7 @@ def download_message_media(msg_id):
     # profile_path = create_static_profile_path(g.client_id)
     filename = message.save_media(IMAGES_FILES_PATH, True)
     if filename != None:
-        # print("filename: " + str(filename))
+        print("filename: " + str(filename))
         if os.path.exists(filename):
             return send_file(filename, mimetype=message.mime)
 
