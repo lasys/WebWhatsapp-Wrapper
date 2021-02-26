@@ -781,10 +781,16 @@ window.WAPI.sendMessage = function (id, message, done) {
     var chat = WAPI.getChat(id);
     if (chat !== undefined) {
         if (done !== undefined) {
-            chat.sendMessage(message).then(function () {
-                function sleep(ms) {
+            chat.sendMessage(message) // .then(function () {
+
+                function checkmessage() {
+                    function sleep(ms) {
                     return new Promise(resolve => setTimeout(resolve, ms));
                 }
+                //
+                // function sleep(ms) {
+                //     return new Promise(resolve => setTimeout(resolve, ms));
+                // }
 
                 var trials = 0;
 
@@ -807,7 +813,9 @@ window.WAPI.sendMessage = function (id, message, done) {
                     sleep(500).then(check);
                 }
                 check();
-            });
+            }
+            // );
+            checkmessage();
             return true;
         } else {
             chat.sendMessage(message);
